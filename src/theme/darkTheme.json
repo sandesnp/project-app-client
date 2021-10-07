@@ -1,0 +1,10 @@
+{
+	"--color-primary": "#343545",
+	"--color-primary-light": "#424351",
+	"--color-primary-lighter": "#44465d",
+	"--color-primary-lightest": "#52546b",
+	"--color-inverse": "#ffffff",
+	"--color-inverse-light": "#ececec",
+	"--color-inverse-lighter": "#e0eefb",
+	"--color-inverse-lightest": "#f1f8ff"
+}

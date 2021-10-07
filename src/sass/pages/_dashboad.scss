@@ -1,0 +1,14 @@
+.dashboard {
+	min-height: 100vh;
+	position: relative;
+	padding-right: 6rem;
+
+	height: 1px;
+	&__container {
+		background-color: var(--color-light-light);
+		display: flex;
+		height: 100%;
+		justify-content: center;
+		align-items: center;
+	}
+}

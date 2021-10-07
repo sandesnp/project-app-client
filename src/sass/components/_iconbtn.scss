@@ -1,0 +1,8 @@
+.iconbtn {
+	background-color: var(--color-primary);
+	cursor: pointer;
+	&__icon {
+		font-size: 3rem;
+		color: var(--color-inverse);
+	}
+}
