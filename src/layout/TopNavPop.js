@@ -1,21 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Popover, PopoverBody, FormGroup, Input } from 'reactstrap';
-import Axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { postTimer, patchTimer } from '../redux/timerSlice';
+import MstoTime from '../functions/mstoTime';
 
-export default function TopNavPop({ icon, setRefresh }) {
+export default function TopNavPop({ icon }) {
 	const [popoverOpen, setPopoverOpen] = useState(false);
 
+	const dispatch = useDispatch();
 	const toggle = () => setPopoverOpen(!popoverOpen);
 
 	const PopoverContent = () => {
-		const [toggle, setToggle] = useState(false);
-		const [project, setProject] = useState({
-			buttonState: false,
-		});
+		// const [toggler, setToggler] = useState(false);
+		const [duration, setDuration] = useState(0);
+		const [project, setProject] = useState(false);
+		const activeTimer = useSelector((state) => state.Timer.activeTimer);
+		let difference;
 
-		const handleSubmit = async (e) => {
+		const handleDuration = () => {
+			if (activeTimer) {
+				const newDate = new Date().getTime();
+				const itemDate = new Date(activeTimer.started_at).getTime();
+				difference = newDate - itemDate;
+				const mstoTime = MstoTime(difference);
+				const timer = setTimeout(() => {
+					setDuration(mstoTime);
+				}, 1000);
+				// this will clear Timeout
+				// when component unmount like in willComponentUnmount
+				return () => {
+					clearTimeout(timer);
+				};
+			}
+		};
+
+		useEffect(() => handleDuration(), [duration]);
+
+		const handleCreate = (e) => {
 			e.preventDefault();
-			setToggle((prev) => !prev);
+			// setToggler((prev) => !prev);
 
 			const timerItem = {
 				title: e.target.title.value,
@@ -24,18 +47,16 @@ export default function TopNavPop({ icon, setRefresh }) {
 				started_at: new Date(),
 			};
 
-			const Token = await Axios.post('/api/login/', {
-				email: 'admin@email.com',
-				password: 'admin',
-			});
+			dispatch(postTimer(timerItem));
+		};
 
-			if (Token.data.hasOwnProperty('access')) {
-				const { access } = Token.data;
-				const response = await Axios.post('/api/task/', timerItem, {
-					headers: { Authorization: `Bearer ${access}` },
-				});
-				response.data.hasOwnProperty('title') && setRefresh((prev) => !prev);
-			}
+		const handleUpdate = (e) => {
+			e.preventDefault();
+			// console.log(new Date(difference).toISOString());
+			const ended_at = new Date(difference).toISOString();
+			dispatch(
+				patchTimer({ timerId: activeTimer.id, ended_at, time_taken: duration })
+			);
 		};
 
 		const ProjectContent = ({ state }) => {
@@ -83,6 +104,62 @@ export default function TopNavPop({ icon, setRefresh }) {
 			);
 		};
 
+		const PreCreate = () => {
+			return (
+				<>
+					<input
+						type='text'
+						placeholder='What are you doing right now?'
+						className='topnav-popovercontent__create-input'
+						name='title'
+					/>
+					<button
+						className='topnav-popovercontent__create-button'
+						style={{
+							backgroundColor: 'var(--color-green)',
+						}}
+					>
+						<i
+							style={{
+								backgroundColor: 'var(--color-green)',
+							}}
+							className='fas fa-play'
+						></i>
+					</button>
+				</>
+			);
+		};
+		const PostCreate = () => {
+			return (
+				<>
+					<h4 className='topnav-popovercontent__create-title'>
+						{activeTimer.title}
+					</h4>
+
+					<h4
+						className='topnav-popovercontent__create-timer'
+						style={{ flex: '1' }}
+					>
+						{' '}
+						{duration}
+					</h4>
+					<button
+						className='topnav-popovercontent__create-button'
+						style={{
+							backgroundColor: 'var(--color-red',
+						}}
+					>
+						<i
+							style={{
+								backgroundColor: 'var(--color-red',
+							}}
+							className='fas fa-pause'
+						></i>
+					</button>
+				</>
+			);
+		};
+
 		const PopoverUpper = () => {
 			return (
 				<div className='topnav-popovercontent'>
@@ -90,31 +167,9 @@ export default function TopNavPop({ icon, setRefresh }) {
 					<h5 className='topnav-popovercontent__subheading'>
 						Start tracking your activities
 					</h5>
-					<form onSubmit={handleSubmit}>
+					<form onSubmit={activeTimer ? handleUpdate : handleCreate}>
 						<div className='topnav-popovercontent__create'>
-							<input
-								type='text'
-								placeholder='What are you doing right now?'
-								className='topnav-popovercontent__create-input'
-								name='title'
-							/>
-							<button
-								className='topnav-popovercontent__create-button'
-								style={{
-									backgroundColor: toggle
-										? 'var(--color-red'
-										: 'var(--color-green)',
-								}}
-							>
-								<i
-									style={{
-										backgroundColor: toggle
-											? 'var(--color-red'
-											: 'var(--color-green)',
-									}}
-									className={toggle ? 'fas fa-pause' : 'fas fa-play'}
-								></i>
-							</button>
+							{activeTimer ? <PostCreate /> : <PreCreate />}
 						</div>
 						<p
 							className='topnav-popovercontent__add'
@@ -122,7 +177,7 @@ export default function TopNavPop({ icon, setRefresh }) {
 						>
 							+add project
 						</p>
-						<ProjectContent state={project} />
+						{project && <ProjectContent state={project} />}
 					</form>
 				</div>
 			);

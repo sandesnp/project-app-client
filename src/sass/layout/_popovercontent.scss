@@ -22,13 +22,24 @@
 	&__create {
 		width: 100%;
 		display: flex;
+		align-items: center;
 		&-input {
 			flex: 1;
 			font-size: 1.4rem;
 			font-weight: 400;
-			margin-right: 1rem;
+			margin-right: 0.5rem;
 			padding: 0.5rem;
 			border: 1px solid var(--color-inverse);
+			border-radius: 5px;
+		}
+		&-title {
+			flex: 1;
+			font-size: 1.4rem;
+			font-weight: 600;
+			margin-right: 1rem;
+		}
+		&-timer {
+			flex: 0 0 20%;
 		}
 		&-button {
 			padding: 0.9rem;
@@ -60,8 +71,7 @@
 			background-color: initial;
 		}
 	}
-	h3 {
-	}
+
 	&__container-duration {
 		display: flex;
 		align-items: center;
@@ -78,5 +88,9 @@
 			border: 1px solid var(--color-inverse-lightest);
 			border-radius: 1rem;
 		}
+	}
+	&__container-button {
+		display: flex;
+		justify-content: space-between;
 	}
 }

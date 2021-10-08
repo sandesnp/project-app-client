@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import TimeList_Item from './TimeListItem';
 
-export default function TimeList({ timerList }) {
-	console.log(timerList);
+export default function TimeList({ timerList = [] }) {
 	//lists timelistitem based on day it was created.
 	return (
 		<div className='timelist'>

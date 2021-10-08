@@ -1,38 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { Popover, PopoverBody, FormGroup, Input } from 'reactstrap';
+import { Popover, PopoverBody, FormGroup, Input, Button } from 'reactstrap';
+import { useSelector, useDispatch } from 'react-redux';
+import { deleteTimer } from '../redux/timerSlice';
+import MstoTime from '../functions/mstoTime';
 
 export default function TimeList_Item({ listId, toggler, item }) {
 	const [popoverOpen, setPopoverOpen] = useState(false);
 	const toggle = () => setPopoverOpen(!popoverOpen);
-	const [duration, setDuration] = useState(0);
-
-	function msToTime(duration) {
-		let seconds = Math.floor((duration / 1000) % 60);
-		let minutes = Math.floor((duration / (1000 * 60)) % 60);
-		let hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-
-		hours = hours < 10 ? '0' + hours : hours;
-		minutes = minutes < 10 ? '0' + minutes : minutes;
-		seconds = seconds < 10 ? '0' + seconds : seconds;
-		return hours + ':' + minutes + ':' + seconds;
-	}
+	const [duration, setDuration] = useState(item.time_taken);
+	const TimerID = useSelector((state) => state.Timer.activeTimer?.id);
 
 	const handleDuration = () => {
-		const newDate = new Date().getTime();
-		const itemDate = new Date(item.started_at).getTime();
-		const difference = newDate - itemDate;
-		const mstoTime = msToTime(difference);
-		const timer = setTimeout(() => {
-			setDuration(mstoTime);
-		}, 1000);
-		// this will clear Timeout
-		// when component unmount like in willComponentUnmount
-		return () => {
-			clearTimeout(timer);
-		};
+		if (item.id === TimerID) {
+			const newDate = new Date().getTime();
+			const itemDate = new Date(item.started_at).getTime();
+			const difference = newDate - itemDate;
+			const mstoTime = MstoTime(difference);
+			const timer = setTimeout(() => {
+				setDuration(mstoTime);
+			}, 1000);
+			// this will clear Timeout
+			// when component unmount like in willComponentUnmount
+			return () => {
+				clearTimeout(timer);
+			};
+		}
 	};
 
 	useEffect(handleDuration, [duration]);
+
+	const handleUpdate = () => {};
 
 	return (
 		<>
@@ -56,26 +53,37 @@ export default function TimeList_Item({ listId, toggler, item }) {
 				isOpen={popoverOpen}
 			>
 				<PopoverBody>
-					<PopoverContent toggler={toggler} duration={duration} item={item} />
+					<PopoverContent
+						toggler={toggler}
+						duration={duration}
+						item={item}
+						setPopoverOpen={setPopoverOpen}
+					/>
 				</PopoverBody>
 			</Popover>
 		</>
 	);
 }
 
-const PopoverContent = ({ toggler, duration, item }) => {
-	const [create, setCreate] = useState({
-		title: '',
-		buttonState: false,
-	});
+const PopoverContent = ({ toggler, duration, item, setPopoverOpen }) => {
+	const [toggleBtn, setToggleBtn] = useState(false);
+	const dispatch = useDispatch();
 	if (toggler === false) {
+		//when the outer summary element is collapsed popup should close.
 		setPopoverOpen(false);
 	}
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		setCreate((prev) => ({ ...prev, buttonState: !prev.buttonState }));
+		setToggleBtn((prev) => !prev);
 	};
+
+	const handleDelete = (e, timerID) => {
+		e.preventDefault();
+		setPopoverOpen(false);
+		dispatch(deleteTimer(timerID));
+	};
+
 	const ProjectContent = () => {
 		return (
 			<div className='topnav-popovercontent__container-project'>
@@ -112,6 +120,22 @@ const PopoverContent = ({ toggler, duration, item }) => {
 						value={item.started_at.split('T')[0]}
 					/>
 				</FormGroup>
+				<div className='topnav-popovercontent__container-button'>
+					<Button
+						outline
+						color='danger'
+						style={{
+							padding: '.5rem 2rem',
+							fontSize: '1.4rem',
+							fontWeight: '400',
+							color: 'var(--color-red)',
+						}}
+						onClick={(e) => handleDelete(e, item.id)}
+					>
+						Delete
+					</Button>
+					<button className='btn__primary'>Save</button>
+				</div>
 			</div>
 		);
 	};
@@ -127,21 +151,22 @@ const PopoverContent = ({ toggler, duration, item }) => {
 							className='topnav-popovercontent__create-input'
 							name='title'
 						/>
+						<h4 className='topnav-popovercontent__create-timer'> {duration}</h4>
 						<button
 							className='topnav-popovercontent__create-button'
 							style={{
-								backgroundColor: create.buttonState
+								backgroundColor: toggleBtn
 									? 'var(--color-red'
 									: 'var(--color-green)',
 							}}
 						>
 							<i
 								style={{
-									backgroundColor: create.buttonState
+									backgroundColor: toggleBtn
 										? 'var(--color-red'
 										: 'var(--color-green)',
 								}}
-								className={create.buttonState ? 'fas fa-pause' : 'fas fa-play'}
+								className={toggleBtn ? 'fas fa-pause' : 'fas fa-play'}
 							></i>
 						</button>
 					</div>

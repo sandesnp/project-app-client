@@ -4,7 +4,7 @@ import DarkLogo from '../images/logo_dark.png';
 import LightLogo from '../images/logo_light.png';
 import TopNavPop from './TopNavPop';
 
-export default function TopNav({ setTheme, theme, setRefresh }) {
+export default function TopNav({ setTheme, theme }) {
 	//theme true is dark , false is light
 	return (
 		<div className='topnav'>
@@ -12,7 +12,7 @@ export default function TopNav({ setTheme, theme, setRefresh }) {
 				<img src={theme ? LightLogo : DarkLogo} alt='random image' />
 			</figure>
 
-			<TopNavPop icon={'fas fa-tachometer-alt'} setRefresh={setRefresh} />
+			<TopNavPop icon={'fas fa-tachometer-alt'} />
 			<IconBtn icon={'fas fa-tasks'} />
 			<IconBtn icon={'fas fa-search'} />
 			<IconBtn icon={'far fa-sun'} onClick={() => setTheme((prev) => !prev)} />

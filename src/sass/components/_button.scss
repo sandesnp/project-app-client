@@ -1,0 +1,15 @@
+.btn__primary {
+	border: none;
+	outline: none;
+	background-color: var(--color-inverse) !important;
+	color: var(--color-primary) !important;
+	padding: 0.5rem 3rem;
+	font-size: 1.4rem;
+	font-weight: 400;
+	font-size: 1.4rem;
+	border-radius: 0.5rem;
+}
+
+.btn-outline-danger:hover {
+	color: var(--color-light) !important;
+}
