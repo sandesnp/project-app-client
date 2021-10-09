@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Popover, PopoverBody, FormGroup, Input } from 'reactstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import { postTimer, patchTimer } from '../redux/timerSlice';
+import { postTimer, patchTimer, addCount } from '../redux/timerSlice';
 import MstoTime from '../functions/mstoTime';
 
 export default function TopNavPop({ icon }) {
@@ -11,18 +11,15 @@ export default function TopNavPop({ icon }) {
 	const toggle = () => setPopoverOpen(!popoverOpen);
 
 	const PopoverContent = () => {
-		// const [toggler, setToggler] = useState(false);
 		const [duration, setDuration] = useState(0);
 		const [project, setProject] = useState(false);
-		const activeTimer = useSelector((state) => state.Timer.activeTimer);
-		let difference;
+		const Timer = useSelector((state) => state.Timer);
+		const { activeTimer, counter } = Timer;
 
 		const handleDuration = () => {
 			if (activeTimer) {
-				const newDate = new Date().getTime();
-				const itemDate = new Date(activeTimer.started_at).getTime();
-				difference = newDate - itemDate;
-				const mstoTime = MstoTime(difference);
+				dispatch(addCount(1000));
+				const mstoTime = MstoTime(counter);
 				const timer = setTimeout(() => {
 					setDuration(mstoTime);
 				}, 1000);
@@ -38,13 +35,12 @@ export default function TopNavPop({ icon }) {
 
 		const handleCreate = (e) => {
 			e.preventDefault();
-			// setToggler((prev) => !prev);
-
 			const timerItem = {
 				title: e.target.title.value,
 				project: project ? e.target.project.value : '',
 				tag: project ? e.target.tag.value : '',
 				started_at: new Date(),
+				time_taken: '0',
 			};
 
 			dispatch(postTimer(timerItem));
@@ -52,10 +48,13 @@ export default function TopNavPop({ icon }) {
 
 		const handleUpdate = (e) => {
 			e.preventDefault();
-			// console.log(new Date(difference).toISOString());
-			const ended_at = new Date(difference).toISOString();
+
+			const ended_at = new Date();
 			dispatch(
-				patchTimer({ timerId: activeTimer.id, ended_at, time_taken: duration })
+				patchTimer({
+					timerId: activeTimer.id,
+					timer: { ended_at, time_taken: counter },
+				})
 			);
 		};
 

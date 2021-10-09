@@ -1,36 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Popover, PopoverBody, FormGroup, Input, Button } from 'reactstrap';
 import { useSelector, useDispatch } from 'react-redux';
-import { deleteTimer } from '../redux/timerSlice';
+import { deleteTimer, patchTimer } from '../redux/timerSlice';
 import MstoTime from '../functions/mstoTime';
 
 export default function TimeList_Item({ listId, toggler, item }) {
 	const [popoverOpen, setPopoverOpen] = useState(false);
 	const toggle = () => setPopoverOpen(!popoverOpen);
-	const [duration, setDuration] = useState(item.time_taken);
 	const TimerID = useSelector((state) => state.Timer.activeTimer?.id);
+	const counter = useSelector((state) => state.Timer.counter);
 
-	const handleDuration = () => {
-		if (item.id === TimerID) {
-			const newDate = new Date().getTime();
-			const itemDate = new Date(item.started_at).getTime();
-			const difference = newDate - itemDate;
-			const mstoTime = MstoTime(difference);
-			const timer = setTimeout(() => {
-				setDuration(mstoTime);
-			}, 1000);
-			// this will clear Timeout
-			// when component unmount like in willComponentUnmount
-			return () => {
-				clearTimeout(timer);
-			};
-		}
-	};
-
-	useEffect(handleDuration, [duration]);
-
-	const handleUpdate = () => {};
-
+	const duration = MstoTime(counter);
 	return (
 		<>
 			<div
@@ -44,7 +24,11 @@ export default function TimeList_Item({ listId, toggler, item }) {
 						<span>• Rocket Science</span> - Rocket Inc
 					</h5>
 				</div>
-				<h2 className='timelistitem__right'>{duration}</h2>
+				{item.id === TimerID ? (
+					<h2 className='timelistitem__right'>{duration}</h2>
+				) : (
+					<h2 className='timelistitem__right'>{MstoTime(item.time_taken)}</h2>
+				)}
 			</div>
 			<Popover
 				placement='bottom'
@@ -58,6 +42,7 @@ export default function TimeList_Item({ listId, toggler, item }) {
 						duration={duration}
 						item={item}
 						setPopoverOpen={setPopoverOpen}
+						TimerID={TimerID}
 					/>
 				</PopoverBody>
 			</Popover>
@@ -65,30 +50,30 @@ export default function TimeList_Item({ listId, toggler, item }) {
 	);
 }
 
-const PopoverContent = ({ toggler, duration, item, setPopoverOpen }) => {
-	const [toggleBtn, setToggleBtn] = useState(false);
+const PopoverContent = ({
+	toggler,
+	duration,
+	item,
+	setPopoverOpen,
+	TimerID,
+}) => {
 	const dispatch = useDispatch();
 	if (toggler === false) {
 		//when the outer summary element is collapsed popup should close.
 		setPopoverOpen(false);
 	}
 
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		setToggleBtn((prev) => !prev);
-	};
-
-	const handleDelete = (e, timerID) => {
+	const handleDelete = (e, id) => {
 		e.preventDefault();
 		setPopoverOpen(false);
-		dispatch(deleteTimer(timerID));
+		dispatch(deleteTimer(id));
 	};
 
 	const ProjectContent = () => {
 		return (
 			<div className='topnav-popovercontent__container-project'>
 				<FormGroup>
-					<Input type='select' name='select' id='exampleSelect'>
+					<Input type='select' name='select' id='exampleSelect' name='project'>
 						<option>Project 1</option>
 						<option>Project 2</option>
 						<option>Project 3</option>
@@ -96,7 +81,7 @@ const PopoverContent = ({ toggler, duration, item, setPopoverOpen }) => {
 					</Input>
 				</FormGroup>
 				<FormGroup>
-					<Input type='select' name='select' id='exampleSelect'>
+					<Input type='select' name='select' id='exampleSelect' name='tag'>
 						<option>Tag A</option>
 						<option>Tag B</option>
 						<option>Tag C</option>
@@ -141,32 +126,80 @@ const PopoverContent = ({ toggler, duration, item, setPopoverOpen }) => {
 	};
 
 	const PopoverUpper = () => {
+		const [timerItem, setTimerItem] = useState({ title: item.title });
+		const handleChange = (e) => {
+			e.preventDefault();
+			setTimerItem({ ...timerItem, [e.target.name]: e.target.value });
+		};
+
+		const handlePatch = (e) => {
+			e.preventDefault();
+			console.log(timerItem);
+			dispatch(patchTimer({ timerId: item.id, timer: timerItem }));
+		};
+
+		const handleResumeTimer = (e) => {
+			e.preventDefault();
+		};
+
+		const handleStopTimer = (e) => {
+			e.preventDefault();
+
+			// console.log(new Date(difference).toISOString());
+			const ended_at = new Date();
+			dispatch(
+				patchTimer({
+					timerId: activeTimer.id,
+					timer: {
+						ended_at,
+						time_taken: MstoTime(ended_at.getTime() - new Date(item.st)),
+					},
+				})
+			);
+		};
+
 		return (
 			<div className='topnav-popovercontent'>
-				<form onSubmit={handleSubmit}>
+				<form onSubmit={handlePatch}>
 					<div className='topnav-popovercontent__create'>
 						<input
 							type='text'
-							placeholder='What are you doing right now?'
 							className='topnav-popovercontent__create-input'
 							name='title'
+							value={timerItem.title}
+							onChange={handleChange}
 						/>
-						<h4 className='topnav-popovercontent__create-timer'> {duration}</h4>
+
+						{item.id === TimerID ? (
+							<h3 className='topnav-popovercontent__create-timer'>
+								{' '}
+								{duration}
+							</h3>
+						) : (
+							<h3 className='topnav-popovercontent__create-timer'>
+								{' '}
+								{MstoTime(item.time_taken)}
+							</h3>
+						)}
+
 						<button
 							className='topnav-popovercontent__create-button'
 							style={{
-								backgroundColor: toggleBtn
-									? 'var(--color-red'
-									: 'var(--color-green)',
+								backgroundColor:
+									TimerID === item.id
+										? 'var(--color-red'
+										: 'var(--color-green)',
 							}}
+							onClick={TimerID ? handleStopTimer : handleResumeTimer}
 						>
 							<i
 								style={{
-									backgroundColor: toggleBtn
-										? 'var(--color-red'
-										: 'var(--color-green)',
+									backgroundColor:
+										TimerID === item.id
+											? 'var(--color-red'
+											: 'var(--color-green)',
 								}}
-								className={toggleBtn ? 'fas fa-pause' : 'fas fa-play'}
+								className={TimerID === item.id ? 'fas fa-pause' : 'fas fa-play'}
 							></i>
 						</button>
 					</div>
