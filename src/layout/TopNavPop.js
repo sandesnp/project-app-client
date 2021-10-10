@@ -1,37 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Popover, PopoverBody, FormGroup, Input } from 'reactstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import { postTimer, patchTimer, addCount } from '../redux/timerSlice';
-import MstoTime from '../functions/mstoTime';
+import { postTimer, patchTimer } from '../redux/timerSlice';
 
-export default function TopNavPop({ icon }) {
+export default function TopNavPop({ icon, duration }) {
 	const [popoverOpen, setPopoverOpen] = useState(false);
-
 	const dispatch = useDispatch();
 	const toggle = () => setPopoverOpen(!popoverOpen);
 
 	const PopoverContent = () => {
-		const [duration, setDuration] = useState(0);
 		const [project, setProject] = useState(false);
 		const Timer = useSelector((state) => state.Timer);
 		const { activeTimer, counter } = Timer;
-
-		const handleDuration = () => {
-			if (activeTimer) {
-				dispatch(addCount(1000));
-				const mstoTime = MstoTime(counter);
-				const timer = setTimeout(() => {
-					setDuration(mstoTime);
-				}, 1000);
-				// this will clear Timeout
-				// when component unmount like in willComponentUnmount
-				return () => {
-					clearTimeout(timer);
-				};
-			}
-		};
-
-		useEffect(() => handleDuration(), [duration]);
 
 		const handleCreate = (e) => {
 			e.preventDefault();

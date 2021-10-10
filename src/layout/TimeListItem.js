@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Popover, PopoverBody, FormGroup, Input, Button } from 'reactstrap';
 import { useSelector, useDispatch } from 'react-redux';
-import { deleteTimer, patchTimer } from '../redux/timerSlice';
+import { deleteTimer, makeActive, patchTimer } from '../redux/timerSlice';
 import MstoTime from '../functions/mstoTime';
 
 export default function TimeList_Item({ listId, toggler, item }) {
@@ -11,6 +11,7 @@ export default function TimeList_Item({ listId, toggler, item }) {
 	const counter = useSelector((state) => state.Timer.counter);
 
 	const duration = MstoTime(counter);
+	console.log(1, duration);
 	return (
 		<>
 			<div
@@ -43,6 +44,7 @@ export default function TimeList_Item({ listId, toggler, item }) {
 						item={item}
 						setPopoverOpen={setPopoverOpen}
 						TimerID={TimerID}
+						counter={counter}
 					/>
 				</PopoverBody>
 			</Popover>
@@ -56,6 +58,7 @@ const PopoverContent = ({
 	item,
 	setPopoverOpen,
 	TimerID,
+	counter,
 }) => {
 	const dispatch = useDispatch();
 	if (toggler === false) {
@@ -90,10 +93,15 @@ const PopoverContent = ({
 				</FormGroup>
 				<h3>Duration</h3>
 				<div className='topnav-popovercontent__container-duration'>
-					<h6 type='text'>{duration} </h6>
+					{item.id === TimerID ? (
+						<h6 type='text'>{duration} </h6>
+					) : (
+						<h6 type='text'>{MstoTime(item.time_taken)}</h6>
+					)}
+
 					<h6 type='text'>{item.started_at.split('T')[1].split('.')[0]} </h6>
 					<i className='fas fa-arrow-right'></i>
-					<h6 type='text'>00:00:00 </h6>
+					<h6 type='text'>{MstoTime(new Date(item.ended_at).getTime())} </h6>
 				</div>
 				<FormGroup>
 					<Input
@@ -140,6 +148,7 @@ const PopoverContent = ({
 
 		const handleResumeTimer = (e) => {
 			e.preventDefault();
+			dispatch(makeActive(item));
 		};
 
 		const handleStopTimer = (e) => {
@@ -149,10 +158,10 @@ const PopoverContent = ({
 			const ended_at = new Date();
 			dispatch(
 				patchTimer({
-					timerId: activeTimer.id,
+					timerId: item.id,
 					timer: {
 						ended_at,
-						time_taken: MstoTime(ended_at.getTime() - new Date(item.st)),
+						time_taken: counter,
 					},
 				})
 			);

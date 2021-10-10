@@ -86,7 +86,7 @@ export const patchTimer = createAsyncThunk(
 const initialState = {
 	activeTimer: null,
 	allTimers: [],
-	counter: 0,
+	counter: -1,
 };
 
 const timerSlice = createSlice({
@@ -96,6 +96,14 @@ const timerSlice = createSlice({
 		currentTimer: (state, action) => ({ currentTimerId: action.payload }),
 		addCount: (state, action) => {
 			return { ...state, counter: state.counter + action.payload };
+		},
+		makeActive: (state, action) => {
+			// return { ...state };
+			return {
+				...state,
+				activeTimer: action.payload,
+				counter: parseInt(action.payload.time_taken),
+			};
 		},
 	},
 	extraReducers: (builder) => {
@@ -111,6 +119,7 @@ const timerSlice = createSlice({
 		builder.addCase(postTimer.fulfilled, (state, action) => {
 			return {
 				...state,
+				counter: 0,
 				allTimers: [...state.allTimers, action.payload],
 				activeTimer: action.payload,
 			};
@@ -125,6 +134,7 @@ const timerSlice = createSlice({
 			if (state.activeTimer?.id === action.payload) {
 				return {
 					...state,
+					counter: 0,
 					activeTimer: null,
 					allTimers: state.allTimers.filter(
 						(item) => item.id !== action.payload
@@ -163,6 +173,7 @@ const timerSlice = createSlice({
 			}
 			return {
 				...state,
+				counter: 0,
 				activeTimer: null,
 				allTimers: state.allTimers.map((item) =>
 					item.id === action.payload.id ? action.payload : item
@@ -175,5 +186,5 @@ const timerSlice = createSlice({
 	},
 });
 
-export const { currentTimer, addCount } = timerSlice.actions;
+export const { currentTimer, addCount, makeActive } = timerSlice.actions;
 export default timerSlice.reducer;
