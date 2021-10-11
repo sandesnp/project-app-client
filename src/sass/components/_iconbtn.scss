@@ -5,4 +5,18 @@
 		font-size: 3rem;
 		color: var(--color-inverse);
 	}
+
+	&:hover {
+		background-color: var(--color-inverse-light);
+		& .iconbtn__icon {
+			color: var(--color-primary-light);
+		}
+	}
+
+	&:active {
+		background-color: var(--color-inverse-lighter);
+		& .iconbtn__icon {
+			color: var(--color-primary-lighter);
+		}
+	}
 }

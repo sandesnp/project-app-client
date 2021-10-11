@@ -1,6 +1,6 @@
 {
 	"--color-primary": "#ffffff",
-	"--color-primary-light": "#ececec;",
+	"--color-primary-light": "#ececec",
 	"--color-primary-lighter": "#e0eefb",
 	"--color-primary-lightest": "#f1f8ff",
 	"--color-inverse": "#343545",

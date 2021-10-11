@@ -53,6 +53,9 @@
 				background-color: transparent;
 				border-left: none;
 			}
+			&:hover {
+				background-color: var(--color-inverse-lighter);
+			}
 		}
 	}
 }
